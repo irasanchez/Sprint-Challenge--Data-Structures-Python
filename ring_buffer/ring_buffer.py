@@ -8,23 +8,44 @@ class RingBuffer:
         self.storage = DoublyLinkedList()
 
     def append(self, item):
-        # append changes depending on if the list is full or not
-
-        if self.capacity == self.storage.length:
-            # override the oldest element (head) with the item
-            # self.storage.head
-            print("at capacity")
-            # i think i need get() for this to work so that I can replace items in the middle
-        else:
+        # if below cap
+        if self.storage.length < self.capacity:
+            # add items at the back
             self.storage.add_to_tail(item)
-            print("\n\nstorage: ", self.storage.length, "\n\n")
-            print(self.get())
+        else:
+            # if at cap or higher
+            # check if there is a "current" value, covers first pass
+            if self.current is None:
+                # if not, remove from the front of the list
+                self.storage.remove_from_head()
+                # then add the item in place of the removed one
+                self.storage.add_to_head(item)
+                # reset the "current" to the head
+                self.current = self.storage.head
+            else:
+                # if it's not the first pass
+                # check if current is the tail of the storage
+                if self.current.next:
+                    # if it is not the tail, insert the item in between the current item and the following item
+                    self.current.insert_after(item)
+                    # update the "current" tracker
+                    self.current = self.current.next
+                    # delete the item
+                    self.current.next.delete()
+                else:
+                    # if it is the tail though, remove from the front
+                    self.storage.remove_from_head()
+                    # replace the item there
+                    self.storage.add_to_head(item)
+                    # update the "current" tracker
+                    self.current = self.storage.head
 
     def get(self):
         # Note:  This is the only [] allowed
         list_buffer_contents = []
 
         # TODO: Your code here
+        # keep track of current item to be able to loop below
         current = self.storage.head
 
         while current is not None:
